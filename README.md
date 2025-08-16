@@ -2,6 +2,18 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
+### Prerequisites
+
+1. **OpenAI API Key**: You'll need an OpenAI API key to use the GPT functionality. Get one from [OpenAI's platform](https://platform.openai.com/api-keys).
+
+2. **Environment Setup**: Create a `.env.local` file in the root directory with your OpenAI API key:
+   ```
+   OPENAI_API_KEY=your_actual_openai_api_key_here
+   DATABASE_URL="file:./dev.db"
+   ```
+
+### Running the Application
+
 First, run the development server:
 
 ```bash
@@ -15,6 +27,24 @@ bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+## Features
+
+- **GPT Integration**: Click "Add" to ask GPT about any variable, concept, or topic. The system will automatically cluster related queries and generate research reports.
+- **Automatic Clustering**: Similar thoughts and GPT queries are automatically grouped together.
+- **Research Generation**: The system can generate research notes and reports for each cluster.
+- **Delete Functionality**: Delete individual thoughts, research notes, reports, or entire clusters with confirmation dialogs.
+
+## Usage
+
+1. Enter a variable name, concept, or topic in the input field
+2. Click "Add" to ask GPT about it
+3. The response will be stored and clustered with similar queries
+4. Use the "Research" and "Generate report" buttons to explore each cluster further
+5. Delete unwanted content:
+   - Hover over individual thoughts to see a "Delete" button
+   - Click "Delete cluster" to remove an entire cluster and all its content
+   - Delete individual research notes and reports using their respective delete buttons
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 

@@ -1,103 +1,179 @@
-import Image from "next/image";
+"use client";
+
+import { useEffect, useState, useTransition } from "react";
+import ReactMarkdown from "react-markdown";
+import {
+	actionAddThought,
+	actionAskGPT,
+	actionListClusters,
+	actionRunResearch,
+	actionGenerateReport,
+	actionDeleteThought,
+	actionDeleteCluster,
+	actionDeleteReport,
+	actionDeleteResearchNote,
+} from "@/app/actions";
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+	const [clusters, setClusters] = useState<any[]>([]);
+	const [isPending, startTransition] = useTransition();
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+	useEffect(() => {
+		refresh();
+	}, []);
+
+	function refresh() {
+		startTransition(async () => {
+			const data = await actionListClusters();
+			setClusters(data);
+		});
+	}
+
+	async function onAskGPT(formData: FormData) {
+		await actionAskGPT(formData);
+		(refresh as any)();
+	}
+
+	async function handleDeleteThought(thoughtId: string) {
+		await actionDeleteThought(thoughtId);
+		refresh();
+	}
+
+	async function handleDeleteCluster(clusterId: string) {
+		await actionDeleteCluster(clusterId);
+		refresh();
+	}
+
+	async function handleDeleteReport(reportId: string) {
+		await actionDeleteReport(reportId);
+		refresh();
+	}
+
+	async function handleDeleteResearchNote(noteId: string) {
+		await actionDeleteResearchNote(noteId);
+		refresh();
+	}
+
+	return (
+		<div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 px-4 sm:px-6 py-6 sm:py-10 mx-auto max-w-5xl">
+			<h1 className="text-2xl sm:text-4xl font-bold mb-6 sm:mb-8 text-slate-800 text-center">Focus Researcher</h1>
+			<form action={onAskGPT} className="mb-6 sm:mb-8 grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3">
+				<input
+					name="content"
+					placeholder="Ask GPT about a variable or concept…"
+					className="border-2 border-slate-200 rounded-xl px-4 py-3 text-base sm:text-lg focus:border-blue-500 focus:outline-none transition-colors shadow-sm"
+				/>
+				<button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl px-6 py-3 font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 w-full sm:w-auto">
+					Add
+				</button>
+			</form>
+			<div className="space-y-4 sm:space-y-6">
+				{clusters.map((c) => (
+					<div key={c.id} className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-shadow">
+						<div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-3">
+							<h2 className="text-lg sm:text-xl font-semibold text-slate-800">{c.title}</h2>
+							<div className="flex flex-wrap gap-2 sm:gap-3">
+								<button
+									className="text-xs sm:text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg px-3 sm:px-4 py-2 font-medium transition-colors flex-1 sm:flex-none"
+									onClick={async () => {
+										await actionRunResearch(c.id);
+										refresh();
+									}}
+								>
+									Research
+								</button>
+								<button
+									className="text-xs sm:text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg px-3 sm:px-4 py-2 font-medium transition-colors flex-1 sm:flex-none"
+									onClick={async () => {
+										await actionGenerateReport(c.id);
+										refresh();
+									}}
+								>
+									Generate report
+								</button>
+								<button
+									className="text-xs sm:text-sm bg-red-50 hover:bg-red-100 text-red-600 rounded-lg px-3 sm:px-4 py-2 font-medium transition-colors flex-1 sm:flex-none"
+									onClick={() => handleDeleteCluster(c.id)}
+								>
+									Delete cluster
+								</button>
+							</div>
+						</div>
+						<ul className="space-y-3 mb-4">
+							{c.thoughts.map((t: any) => (
+								<li key={t.id} className="flex flex-col sm:flex-row sm:items-start justify-between group bg-slate-50 rounded-xl p-3 sm:p-4 hover:bg-slate-100 transition-colors">
+									<div className="flex-1 mb-3 sm:mb-0">
+										<ReactMarkdown 
+											components={{
+												p: ({children}) => <p className="mb-2 text-slate-700 leading-relaxed text-sm sm:text-base">{children}</p>,
+												ul: ({children}) => <ul className="list-disc list-inside ml-4 mb-2 space-y-1">{children}</ul>,
+												li: ({children}) => <li className="text-slate-600 text-sm sm:text-base">{children}</li>,
+											}}
+										>
+											{t.content}
+										</ReactMarkdown>
+									</div>
+									<button
+										className="text-xs bg-red-100 hover:bg-red-200 text-red-600 px-3 py-1 rounded-lg font-medium transition-colors opacity-100 sm:opacity-0 group-hover:opacity-100 self-end sm:self-auto"
+										onClick={() => handleDeleteThought(t.id)}
+									>
+										Delete
+									</button>
+								</li>
+							))}
+						</ul>
+						{c.researchNotes?.length ? (
+							<div className="mb-4">
+								<div className="font-semibold mb-3 text-slate-800 text-sm sm:text-base">Research Notes</div>
+								<div className="space-y-3">
+									{c.researchNotes.map((note: any) => (
+										<div key={note.id} className="bg-blue-50 border border-blue-200 rounded-xl p-3 sm:p-4">
+											<div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+												<div className="flex-1">
+													<div className="font-medium text-blue-900 text-sm sm:text-base">{note.title || "Research Note"}</div>
+													{note.summary && <div className="text-blue-700 mt-1 text-sm">{note.summary}</div>}
+												</div>
+												<button
+													className="text-xs bg-red-100 hover:bg-red-200 text-red-600 px-3 py-1 rounded-lg font-medium transition-colors self-end sm:self-auto"
+													onClick={() => handleDeleteResearchNote(note.id)}
+												>
+													Delete
+												</button>
+											</div>
+										</div>
+									))}
+								</div>
+							</div>
+						) : null}
+						{c.reports?.length ? (
+							<div>
+								<div className="font-semibold mb-3 text-slate-800 text-sm sm:text-base">Reports</div>
+								<div className="space-y-3">
+									{c.reports.map((r: any) => (
+										<details key={r.id} className="bg-green-50 border border-green-200 rounded-xl">
+											<summary className="cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 hover:bg-green-100 transition-colors gap-2">
+												<span className="font-medium text-green-900 text-sm sm:text-base">{new Date(r.createdAt).toLocaleString()}</span>
+												<button
+													className="text-xs bg-red-100 hover:bg-red-200 text-red-600 px-3 py-1 rounded-lg font-medium transition-colors self-end sm:self-auto"
+													onClick={(e) => {
+														e.preventDefault();
+														handleDeleteReport(r.id);
+													}}
+												>
+													Delete
+												</button>
+											</summary>
+											<div className="p-3 sm:p-4 pt-0">
+												<pre className="whitespace-pre-wrap text-green-800 text-xs sm:text-sm leading-relaxed">{r.content}</pre>
+											</div>
+										</details>
+									))}
+								</div>
+							</div>
+						) : null}
+					</div>
+				))}
+			</div>
+		</div>
+	);
 }
