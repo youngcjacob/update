@@ -24,14 +24,24 @@ export default function Home() {
 
 	function refresh() {
 		startTransition(async () => {
-			const data = await actionListClusters();
-			setClusters(data);
+			try {
+				const data = await actionListClusters();
+				setClusters(data);
+			} catch (error) {
+				console.error('Error loading clusters:', error);
+				setClusters([]);
+			}
 		});
 	}
 
 	async function onAskGPT(formData: FormData) {
-		await actionAskGPT(formData);
-		(refresh as any)();
+		try {
+			await actionAskGPT(formData);
+			(refresh as any)();
+		} catch (error) {
+			console.error('Error submitting form:', error);
+			// You could add a toast notification here
+		}
 	}
 
 	async function handleDeleteThought(thoughtId: string) {
