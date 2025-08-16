@@ -28,6 +28,13 @@ export async function actionAddThought(formData: FormData) {
 
 export async function actionListClusters() {
 	console.log('🔍 actionListClusters called');
+	console.log('🔍 Environment check:', {
+		NODE_ENV: process.env.NODE_ENV,
+		HAS_DATABASE_URL: !!process.env.DATABASE_URL,
+		DATABASE_URL_START: process.env.DATABASE_URL?.substring(0, 20) + '...',
+		HAS_OPENAI_KEY: !!process.env.OPENAI_API_KEY
+	});
+	
 	try {
 		console.log('🔄 Attempting to fetch clusters...');
 		const clusters = await listClustersWithThoughts();
@@ -67,6 +74,13 @@ export async function actionGetReports(clusterId: string) {
 
 export async function actionAskGPT(formData: FormData) {
 	console.log('🔍 actionAskGPT called');
+	console.log('🔍 Environment check:', {
+		NODE_ENV: process.env.NODE_ENV,
+		HAS_DATABASE_URL: !!process.env.DATABASE_URL,
+		DATABASE_URL_START: process.env.DATABASE_URL?.substring(0, 20) + '...',
+		HAS_OPENAI_KEY: !!process.env.OPENAI_API_KEY
+	});
+	
 	try {
 		const content = formData.get('content') as string;
 		console.log('📝 Content received:', content);
