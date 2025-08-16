@@ -29,12 +29,24 @@ export async function actionAddThought(formData: FormData) {
 export async function actionListClusters() {
 	console.log('🔍 actionListClusters called');
 	try {
+		console.log('🔄 Attempting to fetch clusters...');
 		const clusters = await listClustersWithThoughts();
-		console.log('✅ actionListClusters success:', clusters?.length || 0, 'clusters');
+		console.log('✅ Clusters fetched successfully:', clusters?.length || 0, 'clusters');
 		return clusters;
 	} catch (error) {
-		console.error('❌ actionListClusters error:', error);
-		throw error;
+		console.error('❌ Error in actionListClusters:', error);
+		console.error('❌ Error details:', {
+			name: error instanceof Error ? error.name : 'Unknown',
+			message: error instanceof Error ? error.message : 'Unknown error',
+			stack: error instanceof Error ? error.stack : 'No stack trace'
+		});
+		
+		// Check if it's a database connection error
+		if (error instanceof Error && error.message.includes('connect')) {
+			throw new Error('Database connection failed. Please check your database configuration.');
+		}
+		
+		throw new Error(`Failed to load clusters: ${error instanceof Error ? error.message : 'Unknown error'}`);
 	}
 }
 
@@ -54,57 +66,46 @@ export async function actionGetReports(clusterId: string) {
 }
 
 export async function actionAskGPT(formData: FormData) {
-	console.log('🤖 actionAskGPT called');
-	const variable = String(formData.get("content") ?? "").trim();
-	console.log('📝 Variable to search:', variable);
-	
-	if (!variable) {
-		console.log('❌ Empty variable');
-		return { ok: false, error: "Empty" } as const;
-	}
-	
+	console.log('🔍 actionAskGPT called');
 	try {
-		// Step 1: Get common topics
-		console.log('🔄 Step 1: Getting topics...');
-		const topics = await getCommonTopics(variable);
-		console.log(`\n=== GPT Response for "${variable}" ===`);
-		console.log("Step 1 - Topics:");
-		console.log(topics);
+		const content = formData.get('content') as string;
+		console.log('📝 Content received:', content);
 		
-		// Step 2: Get summaries for those topics
-		console.log('🔄 Step 2: Getting summaries...');
+		if (!content || content.trim() === '') {
+			console.log('❌ Empty content provided');
+			return { ok: false, error: 'Please enter a query' };
+		}
+
+		console.log('🔄 Calling GPT functions...');
+		const topics = await getCommonTopics(content);
+		console.log('✅ Topics received:', topics);
+		
 		const summaries = await getTopicSummaries(topics);
-		console.log("\nStep 2 - Summaries:");
-		console.log(summaries);
-		console.log("================================\n");
-		
-		// Combine topics and summaries for storage
-		const combinedContent = `**${variable}**:\n\n**Topics:**\n${topics}\n\n**Summaries:**\n${summaries}`;
-		
-		// Add it as a thought for clustering
-		console.log('🔄 Adding to database...');
-		const result = await addThoughtAndCluster(combinedContent);
-		console.log('✅ Database result:', result);
+		console.log('✅ Summaries received:', summaries);
 
-		// Fire-and-forget background tasks: research then generate a fresh report
-		setTimeout(() => {
-			(async () => {
-				try {
-					console.log('🔄 Background tasks starting...');
-					await runResearchForCluster(result.clusterId);
-					await generateReportForCluster(result.clusterId);
-					console.log('✅ Background tasks completed');
-				} catch (err) {
-					console.error("❌ Background research/report failed", err);
-				}
-			})();
-		}, 0);
+		const gptResponse = `**${content}**:\n\n**Topics:**\n${topics}\n\n**Summaries:**\n${summaries}`;
+		console.log('📝 Final GPT response:', gptResponse);
 
-		console.log('✅ actionAskGPT completed successfully');
-		return { ok: true, topics, summaries, ...result } as const;
+		console.log('🔄 Adding thought to database...');
+		await addThoughtAndCluster(gptResponse);
+		console.log('✅ Thought added successfully');
+
+		return { ok: true };
 	} catch (error) {
-		console.error('❌ actionAskGPT error:', error);
-		throw error;
+		console.error('❌ Error in actionAskGPT:', error);
+		console.error('❌ Error details:', {
+			name: error instanceof Error ? error.name : 'Unknown',
+			message: error instanceof Error ? error.message : 'Unknown error',
+			stack: error instanceof Error ? error.stack : 'No stack trace'
+		});
+		
+		// Check if it's a database error
+		if (error instanceof Error && (error.message.includes('ENOENT') || error.message.includes('SQLITE_CANTOPEN') || error.message.includes('connect'))) {
+			console.log('⚠️ Database error - this is expected on Vercel without a cloud database');
+			return { ok: false, error: 'Database not available. This app requires a cloud database to store data.' };
+		}
+		
+		return { ok: false, error: error instanceof Error ? error.message : 'Unknown error occurred' };
 	}
 }
 

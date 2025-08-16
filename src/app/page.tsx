@@ -21,8 +21,16 @@ export default function Home() {
 	const [error, setError] = useState<string | null>(null);
 
 	useEffect(() => {
+		console.log('🚀 Home component mounted');
 		refresh();
 	}, []);
+
+	// Add form submission handler for debugging
+	const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+		console.log('📝 Form submit event triggered');
+		console.log('📝 Form element:', e.currentTarget);
+		console.log('📝 Form data:', new FormData(e.currentTarget));
+	};
 
 	function refresh() {
 		setIsLoading(true);
@@ -107,7 +115,7 @@ export default function Home() {
 				</div>
 			)}
 
-			<form action={onAskGPT} className="mb-6 sm:mb-8 grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3">
+			<form action={onAskGPT} onSubmit={handleFormSubmit} className="mb-6 sm:mb-8 grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3">
 				<input
 					name="content"
 					placeholder="Ask GPT about a variable or concept…"
