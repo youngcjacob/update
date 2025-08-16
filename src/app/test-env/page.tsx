@@ -1,4 +1,5 @@
 import { actionListClusters } from '../actions';
+import Link from 'next/link';
 
 export default async function TestEnvPage() {
   console.log('🔍 TestEnvPage - Environment check:', {
@@ -37,9 +38,9 @@ export default async function TestEnvPage() {
         </div>
 
         <div className="mt-6">
-          <a href="/" className="text-blue-600 hover:text-blue-800 underline">
+          <Link href="/" className="text-blue-600 hover:text-blue-800 underline">
             ← Back to main app
-          </a>
+          </Link>
         </div>
       </div>
     </div>
