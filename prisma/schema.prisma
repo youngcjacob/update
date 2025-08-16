@@ -2,51 +2,50 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
+	provider = "prisma-client-js"
+	output   = "./src/generated/prisma"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+	provider = "postgresql"
+	url      = env("DATABASE_URL")
 }
 
 model Thought {
-  id        String   @id @default(cuid())
-  content   String
-  createdAt DateTime @default(now())
-
-  cluster   Cluster? @relation(fields: [clusterId], references: [id])
-  clusterId String?
+	id        String   @id @default(cuid())
+	content   String
+	createdAt DateTime @default(now())
+	clusterId String?
+	cluster   Cluster? @relation(fields: [clusterId], references: [id], onDelete: SetNull)
 }
 
 model Cluster {
-  id           String         @id @default(cuid())
-  title        String
-  keywords     Json
-  summary      String?
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  thoughts     Thought[]
-  researchNotes ResearchNote[]
-  reports      Report[]
+	id            String         @id @default(cuid())
+	title         String
+	keywords      Json
+	summary       String?
+	createdAt     DateTime       @default(now())
+	updatedAt     DateTime       @updatedAt
+	thoughts      Thought[]
+	reports       Report[]
+	researchNotes ResearchNote[]
 }
 
 model ResearchNote {
-  id        String   @id @default(cuid())
-  cluster   Cluster  @relation(fields: [clusterId], references: [id])
-  clusterId String
-  sourceUrl String?
-  title     String?
-  summary   String?
-  content   String?
-  createdAt DateTime @default(now())
+	id        String   @id @default(cuid())
+	clusterId String
+	cluster   Cluster  @relation(fields: [clusterId], references: [id], onDelete: Restrict)
+	sourceUrl String?
+	title     String?
+	summary   String?
+	content   String?
+	createdAt DateTime @default(now())
 }
 
 model Report {
-  id        String   @id @default(cuid())
-  cluster   Cluster  @relation(fields: [clusterId], references: [id])
-  clusterId String
-  content   String
-  createdAt DateTime @default(now())
+	id        String   @id @default(cuid())
+	clusterId String
+	cluster   Cluster  @relation(fields: [clusterId], references: [id], onDelete: Restrict)
+	content   String
+	createdAt DateTime @default(now())
 }
