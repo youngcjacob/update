@@ -30,7 +30,9 @@ export async function askGPTAboutVariable(variable: string): Promise<string> {
 }
 
 export async function getCommonTopics(variable: string): Promise<string> {
+  console.log('🔍 getCommonTopics called with:', variable);
   try {
+    console.log('🔄 Making OpenAI API call for topics...');
     const completion = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [
@@ -47,15 +49,19 @@ export async function getCommonTopics(variable: string): Promise<string> {
       temperature: 0.7,
     });
 
-    return completion.choices[0]?.message?.content || "Sorry, I couldn't generate topics.";
+    const result = completion.choices[0]?.message?.content || "Sorry, I couldn't generate topics.";
+    console.log('✅ getCommonTopics success:', result);
+    return result;
   } catch (error) {
-    console.error('Error calling GPT for topics:', error);
+    console.error('❌ Error calling GPT for topics:', error);
     return "Sorry, there was an error getting topics.";
   }
 }
 
 export async function getTopicSummaries(topics: string): Promise<string> {
+  console.log('🔍 getTopicSummaries called with:', topics);
   try {
+    console.log('🔄 Making OpenAI API call for summaries...');
     const completion = await openai.chat.completions.create({
       model: "gpt-3.5-turbo",
       messages: [
@@ -72,9 +78,11 @@ export async function getTopicSummaries(topics: string): Promise<string> {
       temperature: 0.7,
     });
 
-    return completion.choices[0]?.message?.content || "Sorry, I couldn't generate summaries.";
+    const result = completion.choices[0]?.message?.content || "Sorry, I couldn't generate summaries.";
+    console.log('✅ getTopicSummaries success:', result);
+    return result;
   } catch (error) {
-    console.error('Error calling GPT for summaries:', error);
+    console.error('❌ Error calling GPT for summaries:', error);
     return "Sorry, there was an error getting summaries.";
   }
 }

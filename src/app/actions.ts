@@ -27,8 +27,15 @@ export async function actionAddThought(formData: FormData) {
 }
 
 export async function actionListClusters() {
-	const clusters = await listClustersWithThoughts();
-	return clusters;
+	console.log('🔍 actionListClusters called');
+	try {
+		const clusters = await listClustersWithThoughts();
+		console.log('✅ actionListClusters success:', clusters?.length || 0, 'clusters');
+		return clusters;
+	} catch (error) {
+		console.error('❌ actionListClusters error:', error);
+		throw error;
+	}
 }
 
 export async function actionRunResearch(clusterId: string) {
@@ -47,40 +54,58 @@ export async function actionGetReports(clusterId: string) {
 }
 
 export async function actionAskGPT(formData: FormData) {
+	console.log('🤖 actionAskGPT called');
 	const variable = String(formData.get("content") ?? "").trim();
-	if (!variable) return { ok: false, error: "Empty" } as const;
+	console.log('📝 Variable to search:', variable);
 	
-	// Step 1: Get common topics
-	const topics = await getCommonTopics(variable);
-	console.log(`\n=== GPT Response for "${variable}" ===`);
-	console.log("Step 1 - Topics:");
-	console.log(topics);
+	if (!variable) {
+		console.log('❌ Empty variable');
+		return { ok: false, error: "Empty" } as const;
+	}
 	
-	// Step 2: Get summaries for those topics
-	const summaries = await getTopicSummaries(topics);
-	console.log("\nStep 2 - Summaries:");
-	console.log(summaries);
-	console.log("================================\n");
-	
-	// Combine topics and summaries for storage
-	const combinedContent = `**${variable}**:\n\n**Topics:**\n${topics}\n\n**Summaries:**\n${summaries}`;
-	
-	// Add it as a thought for clustering
-	const result = await addThoughtAndCluster(combinedContent);
+	try {
+		// Step 1: Get common topics
+		console.log('🔄 Step 1: Getting topics...');
+		const topics = await getCommonTopics(variable);
+		console.log(`\n=== GPT Response for "${variable}" ===`);
+		console.log("Step 1 - Topics:");
+		console.log(topics);
+		
+		// Step 2: Get summaries for those topics
+		console.log('🔄 Step 2: Getting summaries...');
+		const summaries = await getTopicSummaries(topics);
+		console.log("\nStep 2 - Summaries:");
+		console.log(summaries);
+		console.log("================================\n");
+		
+		// Combine topics and summaries for storage
+		const combinedContent = `**${variable}**:\n\n**Topics:**\n${topics}\n\n**Summaries:**\n${summaries}`;
+		
+		// Add it as a thought for clustering
+		console.log('🔄 Adding to database...');
+		const result = await addThoughtAndCluster(combinedContent);
+		console.log('✅ Database result:', result);
 
-	// Fire-and-forget background tasks: research then generate a fresh report
-	setTimeout(() => {
-		(async () => {
-			try {
-				await runResearchForCluster(result.clusterId);
-				await generateReportForCluster(result.clusterId);
-			} catch (err) {
-				console.error("background research/report failed", err);
-			}
-		})();
-	}, 0);
+		// Fire-and-forget background tasks: research then generate a fresh report
+		setTimeout(() => {
+			(async () => {
+				try {
+					console.log('🔄 Background tasks starting...');
+					await runResearchForCluster(result.clusterId);
+					await generateReportForCluster(result.clusterId);
+					console.log('✅ Background tasks completed');
+				} catch (err) {
+					console.error("❌ Background research/report failed", err);
+				}
+			})();
+		}, 0);
 
-	return { ok: true, topics, summaries, ...result } as const;
+		console.log('✅ actionAskGPT completed successfully');
+		return { ok: true, topics, summaries, ...result } as const;
+	} catch (error) {
+		console.error('❌ actionAskGPT error:', error);
+		throw error;
+	}
 }
 
 export async function actionDeleteThought(thoughtId: string) {
