@@ -1,19 +1,13 @@
 import prisma from "@/lib/prisma";
 import { extractKeywords, keywordWeights, cosineSimilarity, titleFromKeywords } from "@/lib/text";
-import { PrismaClient } from "@prisma/client";
 
 const SIMILARITY_THRESHOLD = 0.28;
 
 export async function addThoughtAndCluster(content: string) {
 	console.log('🔍 addThoughtAndCluster called with content length:', content.length);
 	try {
-		console.log('🔄 Creating Prisma client...');
-		const prisma = new PrismaClient();
-		console.log('✅ Prisma client created');
-		
-		console.log('🔄 Checking database connection...');
-		await prisma.$connect();
-		console.log('✅ Database connection successful');
+		console.log('🔄 Using Prisma client...');
+		console.log('✅ Prisma client ready');
 		
 		console.log('🔄 Extracting keywords...');
 		const keywords = extractKeywords(content);
@@ -62,8 +56,7 @@ export async function addThoughtAndCluster(content: string) {
 		});
 		console.log('✅ Thought created:', thought.id);
 
-		await prisma.$disconnect();
-		console.log('✅ Database connection closed');
+		console.log('✅ Database operations completed');
 
 		return { clusterId: targetCluster.id, thoughtId: thought.id };
 	} catch (error) {
@@ -93,13 +86,8 @@ export async function addThoughtAndCluster(content: string) {
 export async function listClustersWithThoughts() {
 	console.log('🔍 listClustersWithThoughts called');
 	try {
-		console.log('🔄 Creating Prisma client...');
-		const prisma = new PrismaClient();
-		console.log('✅ Prisma client created');
-		
-		console.log('🔄 Checking database connection...');
-		await prisma.$connect();
-		console.log('✅ Database connection successful');
+		console.log('🔄 Using Prisma client...');
+		console.log('✅ Prisma client ready');
 		
 		console.log('🔄 Fetching clusters with relations...');
 		const clusters = await prisma.cluster.findMany({
@@ -114,8 +102,7 @@ export async function listClustersWithThoughts() {
 		});
 		console.log('✅ Clusters fetched:', clusters.length);
 		
-		await prisma.$disconnect();
-		console.log('✅ Database connection closed');
+		console.log('✅ Database operations completed');
 		
 		return clusters;
 	} catch (error) {
