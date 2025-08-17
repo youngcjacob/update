@@ -119,7 +119,7 @@ export default function Home() {
 				<input
 					name="content"
 					placeholder="Ask GPT about a variable or concept…"
-					className="border-2 border-slate-200 rounded-xl px-4 py-3 text-base sm:text-lg focus:border-blue-500 focus:outline-none transition-colors shadow-sm"
+					className="border-2 border-slate-200 rounded-xl px-4 py-3 text-base sm:text-lg focus:border-blue-500 focus:outline-none transition-colors shadow-sm text-black placeholder-slate-500"
 				/>
 				<button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl px-6 py-3 font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 w-full sm:w-auto">
 					Add
